@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Notas App</title>
+</head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<style >
+
+:root {
+  --background-color: #ffffff; /* day mode */
+  --font-color: #212121;
+}
+
+html {
+  font-family: sans-serif;
+  font-size: 62.5%;
+  scroll-behavior: smooth;
+}
+
+
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+
+body {
+  background-color: var(--background-color);
+  color: var(--font-color);
+  transition: all 0.3s ease;
+  font-size: 1.8rem;
+  line-height: 1.8;
+}
+
+.night-mode {
+  --background-color: #212121; /* night mode */
+  --font-color: #ffffff;
+}
+	
+
+
+/*nav bar*/
+
+nav{
+	/*height: 60px;*/
+	width: 100%;
+	display: flex;
+	justify-content: space-between;
+	padding: 15px 40px;
+	position: relative;
+	background-color: #fff;
+	box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2);
+	z-index: 1;
+	align-items: center;
+	transition: all 0.3s ease;
+}
+
+nav.pegar-arriba{
+  position: sticky;
+  top: 0;
+}
+
+body.night-mode nav {
+	background: #212121;
+	box-shadow: 0 2px 4px rgba(255, 255, 255, 0.2); /* adjust the color and opacity of the box shadow */
+}
+
+
+.app-nombre{
+	border: solid 1px rgba(33, 33, 33, 0.5);
+	border-radius: 40px 10px;
+	padding: 15px;
+	cursor: pointer;
+}
+
+body.night-mode .app-nombre {
+	border-color: rgba(255, 255, 255, 0.5);
+}
+
+
+/*night-mode btn*/
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: background-color 0.3s ease;
+  border-radius: 34px;
+}
+
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: #fff;
+  transition: transform 0.3s ease;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+
+
+
+
+/*gran boton añadir*/
+#add-note-big-btn{
+	font-size: 50px;
+	border-radius: 50%;
+	padding: 5px 20px;
+	background-color: #fff;
+	border: initial;
+	color: #212121;
+	cursor: pointer;
+	position: fixed;
+	bottom: 30px;
+	right: 30px;
+	box-shadow:  4px 4px 20px rgba(0, 0, 0, 0.4);
+	z-index: 998;
+	transition: all 0.3s ease;
+}
+
+
+body.night-mode #add-note-big-btn {
+	background: #212121;
+	color: #fff;
+	box-shadow:  4px 4px 20px 2px rgba(255, 255, 255, 0.15);
+}
+
+
+.add-card-popup-overlay, .edit-card-popup-overlay{
+	display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    animation: popup 0.3s ease-in-out;
+}
+
+.add-card-popup-overlay.active, .edit-card-popup-overlay.active{
+	display: block;
+	z-index: 999;
+}
+
+body.night-mode .add-card-popup-content, body.night-mode .edit-card-popup-content{
+	background-color: #111;
+}
+
+
+
+.add-card-popup-overlay.closed, .edit-card-popup-overlay.closed{
+    animation: closePopup 0.3s ease-in-out forwards;
+}
+
+@keyframes popup {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes closePopup {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+
+
+.add-card-popup-content, .edit-card-popup-content{
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	background-color: #fff;
+	padding: 20px;
+	overflow-y: auto;
+	width: 90%;
+	max-height: 100%;
+	padding-top: 50px;
+	padding-bottom: 50px;
+	border-radius: 15px;
+}
+
+.close {
+    position: absolute;
+    top: -10px;
+    right: 10px;
+    font-size: 4rem;
+    color: #aaa;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    z-index: 1;
+    transition: .3s ease;
+    padding: 10px;
+}
+
+
+
+#meter-notas-form, #editar-notas-form{
+	display: grid;
+	grid-template-columns: 1fr;
+	grid-template-rows: auto auto;
+	gap: 20px;
+	justify-content: center;
+	align-items: flex-start;
+}
+
+#meter-notas-form input[type="text"], #editar-notas-form input[type="text"]{
+	width: 100%;
+	padding: 10px;
+	border: none;
+	border-bottom: solid 1px rgba(33, 33, 33, 0.8);
+	font-size: 16px;
+	background: none;
+}
+
+body.night-mode #meter-notas-form input[type="text"], body.night-mode #editar-notas-form input[type="text"]{
+	color: #fff;
+	border-bottom: solid 1px rgba(255, 255, 255, 0.8);
+}
+
+
+.notas-container{
+	display: grid;
+	align-items: center;
+	grid-template-columns: repeat( auto-fit, minmax(200px, 2fr));
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+    margin-bottom: 10rem;
+}
+
+.nota{
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+	border: 1px solid rgba(0,0,0,.2);
+	padding: 0 30px;
+	border-radius: 10px;
+	position: relative;
+	box-shadow: 0 5px 10px rgba(0, 0, 0,.2);
+	max-width: 300;
+}
+
+body.night-mode .nota{
+	box-shadow: 0 5px 10px rgba(255, 255, 255,.2);
+	border: 1px solid rgba(255,255,255,.13);
+}
+
+.nota-texto{
+  	overflow: hidden;
+  	word-wrap: break-word;
+  	height: 100%;
+	padding: 15px 0 15px 0;
+  	display: block;
+}
+
+.nota-eliminar, .nota-editar{
+	position: absolute;
+	bottom: 5px;
+	border: initial;
+	background: initial;
+	cursor: pointer;
+}
+
+.nota-eliminar{
+	right: 10px;
+}
+.nota-eliminar i{
+  color: #BD3939;
+  background: #fff;
+  border-radius: 50%;
+} 
+
+.nota-editar{
+	right: 50px;
+}
+
+.nota-editar i{
+  color: #39BD51;
+} 
+.nota-eliminar, .nota-editar{
+  font-size: 2.5rem;
+} 
+
+#meter-notas-btn, #editar-notas-btn{
+	border-radius: 10px;
+	background: rgba(33, 33, 33, 0.9);
+	cursor: pointer;
+	border: initial;
+	padding: 10px 20px;
+	color: #fff;
+}
+
+body.night-mode #meter-notas-btn, body.night-mode #editar-notas-btn{
+	background: rgba(100, 100, 100, 0.9);
+}
+
+
+
+/*notificaciones*/
+.notificacion-add, .notificacion-eliminar{
+	width: 200px;
+	height: 40px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: bold;
+	position: fixed;
+	top: 8px;
+	left: 50%;
+	transform: translateX(-50%);
+	padding: 5px 10px;
+	color: #fff;
+	border-radius: 5px;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+	z-index: 10000;
+	animation: popup 0.3s ease-in-out;
+}
+
+.notificacion-add{
+	background: #39BD51;
+	
+}
+
+.notificacion-eliminar{
+	background: #BD3939;
+}
+
+.notificacion-add.closed{
+	 animation: closePopup 0.3s ease-in-out forwards;
+}
+
+.notificacion-eliminar.closed{
+	animation: closePopup 0.3s ease-in-out forwards;
+}
+
+@media (min-width: 768px){
+	.notas-container{
+	    width: calc(100% - 30rem);
+	    margin: auto;
+	}
+
+	.nota{
+		height: 100px;
+	}
+
+	.add-card-popup-content, .edit-card-popup-content{
+		max-width: 40%;
+	}
+}
+
+@media (min-width: 1000px){
+	.notas-container{
+	    width: calc(100% - 50rem);
+	    margin: auto;
+	}
+
+	.nota{
+		height: 100px;
+	}
+}
+
+</style>
+
+<body>
+
+	<nav>
+		<h3 class="app-nombre">Notas App</h3>
+		<label class="switch" for="toggle">
+		<!-- <input type="checkbox" id="toggle" onclick="toggleMode()"> -->
+		<input type="checkbox" id="toggle">
+		<span class="slider"></span>
+	</nav>
+
+	<div class="add-card-popup-overlay">
+		<div class="add-card-popup-content">
+			<form id="meter-notas-form">
+				<button class="close" type="button">&times;</button>
+				<h3>Agregar Nota</h3>
+				<input type="text" id="meter-notas-text" autocomplete="off">
+				<button id="meter-notas-btn">Agregar</button>
+			</form>
+		</div>
+	</div>
+
+	<div class="edit-card-popup-overlay">
+		<div class="edit-card-popup-content">
+			<form id="editar-notas-form">
+				<button class="close" type="button">&times;</button>
+				<h3>Editar Nota</h3>
+				<input type="text" id="editar-notas-text" autocomplete="off">
+				<button id="editar-notas-btn">Guardar</button>
+			</form>
+		</div>
+	</div>
+	
+
+	
+
+	<div id="display-notas" class="notas-container"></div>
+	
+	<button id="add-note-big-btn">+</button>
+
+
+	
+<script>
+
+class AplicacionDeNotas {
+	constructor(){
+		this.todasLasNotas = [];
+		this.nextID = 1;
+		this.texto = document.getElementById("meter-notas-text");
+	}
+
+  // modo nocturno
+	modoNoche(body,btn){
+	  if (btn.checked) {
+	    body.classList.add("night-mode");
+	    localStorage.setItem('nightMode', true); 
+	  } else {
+	    body.classList.remove("night-mode");
+	    localStorage.setItem('nightMode', false); 
+	  }
+	}
+
+	modoNocheLocalStorage(body, nightMode, btn){
+		if (nightMode) {
+			btn.checked = JSON.parse(nightMode);
+			this.modoNoche(body,btn)
+		}
+	}
+
+	// añadir notas
+
+	addNota(textoInput){
+		const notaValue = textoInput.value.trim();
+
+		if (notaValue) {
+			const nota = {
+				nota: notaValue,
+				id: this.nextID
+			}
+
+			this.todasLasNotas.push(nota);
+			this.nextID++;
+
+			textoInput.value = ""
+			this.displayNota();	
+			this.mostrarNotificacionAddEdit("Nota Añadida");
+		}	
+		else{
+			return 
+		}
+	}
+
+	// pop up añadir nota
+	addNotasPopupOpen(btn, overlay){
+		btn.addEventListener("click", () => {
+			overlay.classList.add("active");
+		})
+	}
+
+	// cerrar pop up añadir nota
+	popupClose(click, overlay){
+		click.forEach((btn) => {
+			btn.addEventListener("click", () => {
+				overlay.classList.add("closed");
+				setTimeout(() => {
+					overlay.classList.remove("active");
+					overlay.classList.remove("closed");
+				}, 300);
+				this.resetearFormulario(this.texto);
+			})
+		})
+
+	}
+
+	
+	// pintar nota en el container
+	displayNota(){
+		const notasDisplay = document.getElementById("display-notas");
+		let fragment = document.createDocumentFragment(); 
+		notasDisplay.innerHTML = "";
+
+		for (let i = 0; i < this.todasLasNotas.length; i++) {
+			const laNota = this.todasLasNotas[i];
+
+			const notaDentroDelContainer = document.createElement("div");
+			notaDentroDelContainer.classList.add("nota");
+			notaDentroDelContainer.innerHTML = `
+				<span class="nota-texto">${laNota.nota}</span>
+				<button class="nota-editar" data-id="${laNota.id}"><i class="fa-solid fa-pen-to-square"></i></button>
+				<button class="nota-eliminar" data-id="${laNota.id}"><i class="fa-solid fa-circle-xmark"></i></button>
+			`;
+
+			// logica para eliminar
+			const eliminarBtn = notaDentroDelContainer.querySelector(".nota-eliminar");
+			eliminarBtn.addEventListener("click", () => {
+				this.eliminarNota(laNota.id);
+				this.displayNota();
+			})
+
+			// logica para editar
+			const editarBtn = notaDentroDelContainer.querySelector(".nota-editar");
+			editarBtn.addEventListener("click", () => {
+				const editarForm = document.querySelector("#editar-notas-form");
+				editarForm.setAttribute("data-id", laNota.id);
+				document.getElementById("editar-notas-text").value = laNota.nota;
+				this.editNotasPopupOpen();
+			})
+
+			fragment.appendChild(notaDentroDelContainer);
+		}
+
+		notasDisplay.appendChild(fragment)
+	}
+
+	// eliminar nota
+	eliminarNota(id){
+		let index = this.todasLasNotas.findIndex(nota => nota.id === id);
+		if (index !== -1){
+			this.todasLasNotas.splice(index, 1);
+			this.mostrarNotificacionEliminar("Nota Eliminada")
+		}
+	}
+
+	// editar nota
+	editarNota(editarForm){
+		const idForm = parseInt(editarForm.getAttribute("data-id"));
+		const nuevoTexto = document.getElementById("editar-notas-text").value.trim();
+		if (nuevoTexto) {
+			const index = this.todasLasNotas.findIndex((nota) => {
+				return nota.id === idForm
+			});
+			if (index !== -1) {
+				this.todasLasNotas[index].nota = nuevoTexto;
+			}
+			
+			this.displayNota();
+		}
+	}
+
+	// editar nota pop up
+	editNotasPopupOpen(){
+		let editarNotaPopup = document.querySelector(".edit-card-popup-overlay");
+		editarNotaPopup.classList.add("active")	
+	}
+
+	// editar nota cerrar pop up
+	editNotasPopupClose(click, overlay){
+		click.forEach((btn) => {
+			btn.addEventListener("click", () => {
+				overlay.classList.add("closed");
+				console.log("bu")
+				setTimeout(() => {
+					overlay.classList.remove("active");
+					overlay.classList.remove("closed");
+				}, 300);
+			})
+		})
+
+	}
+
+	// cerrar popups  al darle submit a las forms
+	popupCloseOnSubmit(overlay){
+		overlay.classList.add("closed");
+		setTimeout(() => {
+				overlay.classList.remove("active");
+				overlay.classList.remove("closed");
+		}, 300);
+	}
+
+	 // cerrar popups cuando clicka fuera de la forma
+	popupCloseOverlay(overlay){
+		overlay.addEventListener("click", (e) => {
+			if (e.target === overlay) {
+				overlay.classList.add("closed");
+				setTimeout(() => {
+					overlay.classList.remove("active");
+					overlay.classList.remove("closed");
+				}, 300);
+				this.resetearFormulario(this.texto);
+			}
+		})
+	}
+
+	// mostrar notificacion al añadir y editar
+	mostrarNotificacionAddEdit(mensaje){
+		const notificacion = document.createElement("div");
+	  notificacion.classList.add("notificacion-add");
+	  notificacion.textContent = mensaje;
+	  document.body.appendChild(notificacion);
+	  setTimeout(() => {
+	    notificacion.classList.add("closed");
+	  }, 2000);
+	}
+
+	// mostrar notificacion al eliminar
+	mostrarNotificacionEliminar(mensaje){
+		const notificacion = document.createElement("div");
+	  notificacion.classList.add("notificacion-eliminar");
+	  notificacion.textContent = mensaje;
+	  document.body.appendChild(notificacion);
+	  setTimeout(() => {
+	    notificacion.classList.add("closed");
+	  }, 2000);
+	}
+
+	resetearFormulario(texto){
+		texto.value ="";
+	}
+
+
+}
+
+
+
+
+
+
+// notas
+let formulario = document.getElementById("meter-notas-form")
+let editarFormulario = document.querySelector("#editar-notas-form");
+let notasInput = document.getElementById("meter-notas-text")
+let notasInputEdit = document.getElementById("editar-notas-text")
+let notasDisplay = document.getElementById("display-notas")
+
+// interfazz
+
+let body = document.body;
+let toggleBtnNoche = document.getElementById("toggle");
+let nightMode = localStorage.getItem('nightMode');
+let popupGranBtn = document.querySelector("#add-note-big-btn");
+let overlayAdd = document.querySelector(".add-card-popup-overlay");
+let btnClosePopup = document.querySelectorAll(".close");
+
+let overlayedit = document.querySelector(".edit-card-popup-overlay");
+let editarBtn = document.querySelectorAll(".nota-editar")
+
+const notasApp = new AplicacionDeNotas();
+
+// logica general de la aplicacion
+
+//expresiones regulares
+let regex = /^\s*\S.*/; //espacios en blanco
+let regex2 = /^.{1,30}$/; //max 30 caracteres
+
+formulario.addEventListener("submit", (e) => {
+	e.preventDefault();
+
+	if (regex.test(notasInput.value)) {
+
+		if (!regex2.test(notasInput.value)) {
+			notasApp.mostrarNotificacionEliminar("carateres max. 30")
+		}else{
+			notasApp.addNota(notasInput)
+			notasApp.popupCloseOnSubmit(overlayAdd)
+		}
+					
+	}
+	else{
+		notasApp.mostrarNotificacionEliminar("escribe algo")
+		return
+	}
+	
+	
+})
+
+editarFormulario.addEventListener("submit", (e) => {
+	e.preventDefault();
+	if (!regex2.test(notasInputEdit.value)) {
+		notasApp.mostrarNotificacionEliminar("Carateres Max. 30")
+	}else{
+		notasApp.editarNota(editarFormulario);
+		notasApp.popupCloseOnSubmit(overlayedit)
+		notasApp.mostrarNotificacionAddEdit("Nota Editada")
+	}
+	
+})
+
+
+
+// interfaz
+
+toggleBtnNoche.addEventListener("click", () => {
+	notasApp.modoNoche(body,toggleBtnNoche);
+})
+
+notasApp.modoNocheLocalStorage(body, nightMode, toggleBtnNoche);
+
+// pop ups 
+notasApp.addNotasPopupOpen(popupGranBtn, overlayAdd);
+notasApp.popupClose(btnClosePopup, overlayAdd);
+notasApp.popupCloseOverlay(overlayAdd);
+notasApp.popupClose(btnClosePopup, overlayedit);
+notasApp.popupCloseOverlay(overlayedit);
+
+
+</script>
+</body>
+</html>
